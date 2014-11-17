@@ -1,6 +1,6 @@
 {exec} = require 'child_process'
 
-exports.Text =
+exports.Html =
 
 	'1': (test) ->
 		exec 'echo "<section>test<div>le</div></section>" | lib/cli --html section --no-trailing-line-break', (error, stdout, stderr) ->
