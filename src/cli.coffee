@@ -12,7 +12,10 @@ package_json = require '../package.json'
 
 program
 	.usage '[--text \'selector\']'
-	.option '--text [selector]', 'Output inner text of items, matching the selector'
+	.option '-t, --text [selector]', 'Output inner text of items, matching the selector'
+	.option '-h, --html [selector]', 'Output HTML content of items, matching the selector'
+	.option '-c, --count [selector]', 'Output count if items, matching the selector'
+	.option '--no-trailing-line-break', 'Don\'t output training line break'
 	.version package_json.version
 	.parse process.argv
 
@@ -28,4 +31,8 @@ process.stdin.on 'end', ->
 		"../node_modules/jquery/dist/jquery.js"
 	],
 	(errors, window) ->
-		process.stdout.write (window.$ program.text).text() if program.text?
+		process.stdout.write String (window.$ program.text).text() if program.text?
+		process.stdout.write String (window.$ program.html).html() if program.html?
+		process.stdout.write String (window.$ program.count).length if program.count?
+		process.stdout.write '\n' if program.trailingLineBreak
+		# process.stdout.write (window.$ program.count).length if program.count?
