@@ -13,6 +13,16 @@ npm install --global jquery-cli2
 
 ## Usage
 
+ - Counting items
+
+```bash
+cat categories.htm | jquery-cli2 --selector '#menu > ul > li > a' -c | paste -s -d+ | bc
+```
+
+```bash
+cat categories.htm | jquery-cli2 --selector '#menu > ul > li > a' -c | wc -l
+```
+
  - Parse file on disk
 
 ```bash
