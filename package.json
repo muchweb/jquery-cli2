@@ -1,7 +1,7 @@
 {
   "name": "jquery-cli2",
   "description": "Query HTML",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/muchweb/jquery-cli2",
   "license": "GPL-3.0+",
   "main": "lib/main.js",
