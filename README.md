@@ -16,11 +16,11 @@ npm install --global jquery-cli2
  - Counting items
 
 ```bash
-cat categories.htm | jquery-cli2 --selector '#menu > ul > li > a' -c | paste -s -d+ | bc
+cat file.html | jquery-cli2 --selector '#menu > ul > li > a' --count | paste -s -d+ | bc
 ```
 
 ```bash
-cat categories.htm | jquery-cli2 --selector '#menu > ul > li > a' -c | wc -l
+cat file.html | jquery-cli2 --selector '#menu > ul > li > a' --count | wc -l
 ```
 
  - Parse file on disk
@@ -43,6 +43,12 @@ curl https://www.npmjs.org/package/jquery-cli2 | jquery-cli2 --text 'table.metad
 
 ```bash
 echo '<section><div><ul><li>testing</li></ul></div><section>' | jquery-cli2 --html div --no-trailing-line-break | jquery-cli2 --html ul --no-trailing-line-break
+```
+
+## Building
+
+```
+make
 ```
 
 ## :free: License
