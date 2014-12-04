@@ -5,12 +5,12 @@
 
 'use strict'
 
-jsdom = require 'jsdom'
-program = require 'commander'
-package_json = require '../package.json'
-input = ''
+jsdom     = require 'jsdom'
+commander = require 'commander'
+config    = require '../package.json'
+input     = ''
 
-program
+commander
 	.option '-s, --selector [selector]', 'Output inner text of items, matching the selector'
 	.option '-t, --text', 'Output inner text of items, matching the selector'
 	.option '-h, --html', 'Output HTML content of items, matching the selector'
@@ -19,7 +19,7 @@ program
 	.option '-f, --format [name]', 'Allowed formats are \'text\' or \'json\''
 	.option '--no-trailing-line-break', 'Don\'t output training line break'
 	# .option '--no-preserve-linebreaks', 'Keep inner line breaks'
-	.version package_json.version
+	.version config.version
 	.parse process.argv
 
 process.stdin.setEncoding 'utf8'
@@ -33,18 +33,18 @@ process.stdin.on 'end', ->
 	[
 		'../node_modules/jquery/dist/jquery.js'
 	], (errors, window) ->
-		throw new Error 'Please specify a selector. Use -h to show usage information' unless program.selector?
-		items = window.$ program.selector
+		throw new Error 'Please specify a selector. Use -h to show usage information' unless commander.selector?
+		items = window.$ commander.selector
 		result = []
 
 		if items.length > 0
 			items.each ->
-				result.push (window.$ this).length if program.count?
-				result.push (window.$ this).text() if program.text?
-				result.push (window.$ this).html() if program.html?
-				result.push (window.$ this).attr program.attr if program.attr?
+				result.push (window.$ this).length if commander.count?
+				result.push (window.$ this).text() if commander.text?
+				result.push (window.$ this).html() if commander.html?
+				result.push (window.$ this).attr commander.attr if commander.attr?
 
-		switch program.format
+		switch commander.format
 			when 'json' then process.stdout.write JSON.stringify result
 			else
 				result.map (item) ->
@@ -52,4 +52,4 @@ process.stdin.on 'end', ->
 				process.stdout.write result.join '\n'
 
 		# Trailing new line
-		process.stdout.write '\n' if program.trailingLineBreak
+		process.stdout.write '\n' if commander.trailingLineBreak
