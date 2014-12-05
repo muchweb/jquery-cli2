@@ -8,8 +8,8 @@
 jsdom  = require 'jsdom'
 config = require '../package.json'
 input  = ''
-args = process.argv.slice 2
 
+args = process.argv.slice 2
 while args.length isnt 0
 	arg = args.shift()
 
@@ -59,6 +59,7 @@ process.stdin.on 'end', ->
 		format = 'text'
 		trailinglinebreak = yes
 
+		args = process.argv.slice 2
 		while args.length isnt 0
 			arg = args.shift()
 
