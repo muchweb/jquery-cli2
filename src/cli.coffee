@@ -5,9 +5,44 @@
 
 'use strict'
 
-jsdom     = require 'jsdom'
-config    = require '../package.json'
-input     = ''
+jsdom  = require 'jsdom'
+config = require '../package.json'
+input  = ''
+args = process.argv.slice 2
+
+while args.length isnt 0
+	arg = args.shift()
+
+	switch arg
+
+		when '-v', '--version'
+			process.stdout.write "#{config.version}\n"
+			return
+
+		when '-h', '--help'
+			process.stdout.write "#{config.name}: #{config.description}\n"
+			process.stdout.write "Usage: #{config.name} [OPTION]…\n"
+			process.stdout.write '\n'
+			process.stdout.write 'Filtering elements:\n'
+			process.stdout.write '  -s, --selector {selector}    Output inner text of items, matching the selector\n'
+			process.stdout.write '\n'
+			process.stdout.write 'Outputting results:\n'
+			process.stdout.write '  -h, --html                   Output HTML content of items, matching the selector\n'
+			process.stdout.write '  -t, --text                   Output inner text of items, matching the selector\n'
+			process.stdout.write '  -c, --count                  Output count if items, matching the selector\n'
+			process.stdout.write '  -a, --attr {name}            Return specific attr value of matched elements\n'
+			process.stdout.write '\n'
+			process.stdout.write 'Modifying document:\n'
+			process.stdout.write '  -r, --remove                 Remove an element. Root element will get re-selected\n'
+			process.stdout.write '\n'
+			process.stdout.write 'Output formatting:\n'
+			process.stdout.write '  -f, --format {text|json}     Allowed formats are \'text\' or \'json\'\n'
+			process.stdout.write '  -n, --no-trailing-line-break Don\'t output training line break\n'
+			process.stdout.write '\n'
+			process.stdout.write 'Miscellaneous:\n'
+			process.stdout.write '  -h, --help                   Show this help message\n'
+			process.stdout.write '  -v, --version                Output package version\n'
+			return
 
 process.stdin.setEncoding 'utf8'
 
@@ -24,25 +59,10 @@ process.stdin.on 'end', ->
 		format = 'text'
 		trailinglinebreak = yes
 
-		args = process.argv.slice 2
 		while args.length isnt 0
 			arg = args.shift()
 
 			switch arg
-
-				when '--help'
-					process.stdout.write '-s, --selector {selector}', 'Output inner text of items, matching the selector\n'
-					process.stdout.write '-h, --html', 'Output HTML content of items, matching the selector\n'
-					process.stdout.write '-t, --text', 'Output inner text of items, matching the selector\n'
-					process.stdout.write '-c, --count', 'Output count if items, matching the selector\n'
-					process.stdout.write '-r, --remove', 'Remove an element. Root element will get re-selected\n'
-					process.stdout.write '-a, --attr {name}', 'Return specific attr value of matched elements\n'
-					process.stdout.write '-f, --format {text|json}', 'Allowed formats are \'text\' or \'json\'\n'
-					process.stdout.write '-n, --no-trailing-line-break', 'Don\'t output training line break\n'
-						# .option '--no-preserve-linebreaks', 'Keep inner line breaks'
-						.version config.version
-						.parse process.argv
-						return;
 
 				when '-s', '--selector'
 					finder = args.shift()
