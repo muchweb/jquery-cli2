@@ -18,6 +18,7 @@ commander
 	.option '-a, --attr [name]', 'Return specific attr value of matched elements'
 	.option '-f, --format [name]', 'Allowed formats are \'text\' or \'json\''
 	.option '--no-trailing-line-break', 'Don\'t output training line break'
+	.option '-m, --multiple', 'Miltiple inputs, that are separated by a line break'
 	# .option '--no-preserve-linebreaks', 'Keep inner line breaks'
 	.version config.version
 	.parse process.argv
@@ -47,7 +48,7 @@ process.stdin.on 'end', ->
 		switch commander.format
 			when 'json' then process.stdout.write JSON.stringify result
 			else
-				result.map (item) ->
+				result = result.map (item) ->
 					(String item).replace /(\r\n|\n|\r)/gm, ''
 				process.stdout.write result.join '\n'
 
