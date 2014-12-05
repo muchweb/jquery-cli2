@@ -3,7 +3,7 @@
 exports.Text =
 
 	'1': (test) ->
-		exec 'echo "<html>test<div>le</div></html>" | lib/cli --selector \'html\' --text --no-trailing-line-break', (error, stdout, stderr) ->
+		exec 'echo "<html>test<div>le</div></html>" | lib/cli --text --no-trailing-line-break', (error, stdout, stderr) ->
 			test.strictEqual error, null
 			test.strictEqual stderr, ''
 			test.strictEqual stdout, 'testle'
