@@ -30,7 +30,8 @@ class Cli2
 		args.shift()
 
 	SetPointer: (path=':root') ->
-		@pointer = @window.$ path
+		return @pointer = @window.$ path if path is ':root'
+		@pointer = @pointer.find path
 
 	ParseInitial: ->
 		args = @args.slice 0
@@ -78,19 +79,19 @@ class Cli2
 			switch arg
 
 				when '-s', '--selector'
-					@SetPointer @pointer.find @ExpectInput args
+					@SetPointer @ExpectInput args
 
 				when '-h', '--html'
-					@pointer.each (item) => @result.push (@window.$ item).html()
+					@pointer.each -> current.result.push (current.window.$ this).html()
 
 				when '-t', '--text'
-					@pointer.each (item) => @result.push (@window.$ item).text()
+					@pointer.each -> current.result.push (current.window.$ this).text()
 
 				when '-c', '--count'
-					@pointer.each (item) => @result.push (@window.$ item).length
+					@pointer.each -> current.result.push (current.window.$ this).length
 
 				when '-a', '--attr'
-					@pointer.each (item) => @result.push (@window.$ item).attr @ExpectInput args
+					@pointer.each -> current.result.push (current.window.$ this).attr @ExpectInput args
 
 				when '-r', '--remove'
 					@pointer.remove()
