@@ -10,6 +10,7 @@ config = require '../package.json'
 input  = ''
 
 args = process.argv.slice 2
+args.push '-h' if args.length is 0
 while args.length isnt 0
 	arg = args.shift()
 
@@ -21,7 +22,7 @@ while args.length isnt 0
 
 		when '-h', '--help'
 			process.stdout.write """
-				#{config.name}: #{config.description}"
+				#{config.name}: #{config.description}
 				Usage: #{config.name} [OPTION]…
 
 				Filtering elements:
