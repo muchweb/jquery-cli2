@@ -58,6 +58,9 @@ process.stdin.on 'end', ->
 		throw new Error 'Expecting an argument, nothing found' if args.length is 0
 		args.shift()
 
+	invalid_input = (arg) ->
+		throw new Error "Invalid argument: \'#{arg}\'.\nTry \'-h\' or \'--help\' for more information."
+
 	jsdom.env input, [
 		'../node_modules/jquery/dist/jquery.js'
 	], (errors, window) ->
@@ -99,6 +102,9 @@ process.stdin.on 'end', ->
 
 				when '-n', '--no-trailing-line-break'
 					trailinglinebreak = no
+
+				else
+					invalid_input arg
 
 		switch format
 			when 'json'
