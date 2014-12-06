@@ -53,6 +53,10 @@ process.stdin.on 'readable', ->
 	input += chunk if chunk isnt null
 
 process.stdin.on 'end', ->
+	expect_input = (args) ->
+		throw new Error 'Expecting an argument, nothing found' if args.length is 0
+		args.shift()
+
 	jsdom.env input, [
 		'../node_modules/jquery/dist/jquery.js'
 	], (errors, window) ->
@@ -68,7 +72,7 @@ process.stdin.on 'end', ->
 			switch arg
 
 				when '-s', '--selector'
-					finder = args.shift()
+					finder = expect_input args
 					item = item.find finder
 
 				when '-h', '--html'
@@ -81,7 +85,7 @@ process.stdin.on 'end', ->
 					item.each -> result.push (window.$ this).length
 
 				when '-a', '--attr'
-					finder = args.shift()
+					finder = expect_input args
 					item.each -> result.push (window.$ this).attr finder
 
 				when '-r', '--remove'
@@ -89,7 +93,7 @@ process.stdin.on 'end', ->
 					item = window.$ ':root'
 
 				when '-f', '--format'
-					finder = args.shift()
+					finder = expect_input args
 					item.each -> result.push (window.$ this).attr finder
 
 				when '-n', '--no-trailing-line-break'
