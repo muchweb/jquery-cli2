@@ -10,6 +10,7 @@ config = require '../package.json'
 input  = ''
 
 args = process.argv.slice 2
+args.push '-h' if args.length is 0
 while args.length isnt 0
 	arg = args.shift()
 
@@ -21,7 +22,7 @@ while args.length isnt 0
 
 		when '-h', '--help'
 			process.stdout.write """
-				#{config.name}: #{config.description}"
+				#{config.name}: #{config.description}
 				Usage: #{config.name} [OPTION]…
 
 				Filtering elements:
@@ -53,6 +54,13 @@ process.stdin.on 'readable', ->
 	input += chunk if chunk isnt null
 
 process.stdin.on 'end', ->
+	expect_input = (args) ->
+		throw new Error 'Expecting an argument, nothing found' if args.length is 0
+		args.shift()
+
+	invalid_input = (arg) ->
+		throw new Error "Invalid argument: \'#{arg}\'.\nTry \'-h\' or \'--help\' for more information."
+
 	jsdom.env input, [
 		'../node_modules/jquery/dist/jquery.js'
 	], (errors, window) ->
@@ -68,7 +76,7 @@ process.stdin.on 'end', ->
 			switch arg
 
 				when '-s', '--selector'
-					finder = args.shift()
+					finder = expect_input args
 					item = item.find finder
 
 				when '-h', '--html'
@@ -81,7 +89,7 @@ process.stdin.on 'end', ->
 					item.each -> result.push (window.$ this).length
 
 				when '-a', '--attr'
-					finder = args.shift()
+					finder = expect_input args
 					item.each -> result.push (window.$ this).attr finder
 
 				when '-r', '--remove'
@@ -89,11 +97,14 @@ process.stdin.on 'end', ->
 					item = window.$ ':root'
 
 				when '-f', '--format'
-					finder = args.shift()
+					finder = expect_input args
 					item.each -> result.push (window.$ this).attr finder
 
 				when '-n', '--no-trailing-line-break'
 					trailinglinebreak = no
+
+				else
+					invalid_input arg
 
 		switch format
 			when 'json'
