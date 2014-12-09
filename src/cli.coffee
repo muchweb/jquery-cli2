@@ -9,43 +9,113 @@ jsdom  = require 'jsdom'
 config = require '../package.json'
 input  = ''
 
-args = process.argv.slice 2
-args.push '-h' if args.length is 0
-while args.length isnt 0
-	arg = args.shift()
+class Cli2
+	constructor: (html='', @args) ->
+		@result = []
+		@format = 'text'
+		@trailing_line_break = yes
+		jsdom.env html, [
+			'../node_modules/jquery/dist/jquery.js'
+		], (error, @window) =>
+			throw error if error isnt null
+			@SetPointer()
+			return if @ParseInitial()
+			return if @ParseMain()
 
-	switch arg
+	InvalidInput: (arg) ->
+		throw new Error "Invalid argument: \'#{arg}\'.\nTry \'-h\' or \'--help\' for more information."
 
-		when '-v', '--version'
-			process.stdout.write "#{config.version}\n"
-			return
+	ExpectInput: (args) ->
+		throw new Error 'Expecting an argument, nothing found' if args.length is 0
+		args.shift()
 
-		when '-h', '--help'
-			process.stdout.write """
-				#{config.name}: #{config.description}
-				Usage: #{config.name} [OPTION]…
+	SetPointer: (path=':root') ->
+		return @pointer = @window.$ path if path is ':root'
+		@pointer = @pointer.find path
 
-				Filtering elements:
-				  -s, --selector {selector}    Output inner text of items, matching the selector
+	ParseInitial: ->
+		args = @args.slice 0
+		args.push '-h' if args.length is 0
+		while args.length isnt 0
+			arg = args.shift()
+			switch arg
+				when '-v', '--version'
+					process.stdout.write "#{config.version}\n"
+					return true
 
-				Outputting results:
-				  -h, --html                   Output HTML content of items, matching the selector
-				  -t, --text                   Output inner text of items, matching the selector
-				  -c, --count                  Output count if items, matching the selector
-				  -a, --attr {name}            Return specific attr value of matched elements
+				when '-h', '--help'
+					process.stdout.write """
+						#{config.name}: #{config.description}
+						Usage: #{config.name} [OPTION]…
 
-				Modifying document:
-				  -r, --remove                 Remove an element. Root element will get re-selected
+						Filtering elements:
+						  -s, --selector {selector}    Output inner text of items, matching the selector
 
-				Output formatting:
-				  -f, --format {text|json}     Allowed formats are 'text' or 'json'
-				  -n, --no-trailing-line-break Don't output training line break
+						Outputting results:
+						  -h, --html                   Output HTML content of items, matching the selector
+						  -t, --text                   Output inner text of items, matching the selector
+						  -c, --count                  Output count if items, matching the selector
+						  -a, --attr {name}            Return specific attr value of matched elements
 
-				Miscellaneous:
-				  -h, --help                   Show this help message
-				  -v, --version                Output package version
-			"""
-			return
+						Modifying document:
+						  -r, --remove                 Remove an element. Root element will get re-selected
+
+						Output formatting:
+						  -f, --format {text|json}     Allowed formats are 'text' or 'json'
+						  -n, --no-trailing-line-break Don't output training line break
+
+						Miscellaneous:
+						  -h, --help                   Show this help message
+						  -v, --version                Output package version
+					"""
+					return true
+		false
+
+	ParseMain: ->
+		current = @
+		args = @args.slice 0
+		while args.length isnt 0
+			arg = args.shift()
+			switch arg
+
+				when '-s', '--selector'
+					@SetPointer @ExpectInput args
+
+				when '-h', '--html'
+					@pointer.each -> current.result.push (current.window.$ this).html()
+
+				when '-t', '--text'
+					@pointer.each -> current.result.push (current.window.$ this).text()
+
+				when '-c', '--count'
+					@pointer.each -> current.result.push (current.window.$ this).length
+
+				when '-a', '--attr'
+					@pointer.each -> current.result.push (current.window.$ this).attr @ExpectInput args
+
+				when '-r', '--remove'
+					@pointer.remove()
+					@SetPointer()
+
+				when '-f', '--format'
+					@pointer.each (item) => @result.push (@window.$ item).attr @ExpectInput args
+
+				when '-n', '--no-trailing-line-break'
+					@trailing_line_break = no
+
+				else
+					@InvalidInput arg
+
+		switch @format
+			when 'json'
+				process.stdout.write JSON.stringify @result
+			else
+				@result = @result.map (item) =>
+					(String item).replace /(\r\n|\n|\r)/gm, ''
+				process.stdout.write @result.join '\n'
+
+		# Trailing new line
+		process.stdout.write '\n' if @trailing_line_break
 
 process.stdin.setEncoding 'utf8'
 
@@ -54,65 +124,4 @@ process.stdin.on 'readable', ->
 	input += chunk if chunk isnt null
 
 process.stdin.on 'end', ->
-	expect_input = (args) ->
-		throw new Error 'Expecting an argument, nothing found' if args.length is 0
-		args.shift()
-
-	invalid_input = (arg) ->
-		throw new Error "Invalid argument: \'#{arg}\'.\nTry \'-h\' or \'--help\' for more information."
-
-	jsdom.env input, [
-		'../node_modules/jquery/dist/jquery.js'
-	], (errors, window) ->
-		item = window.$ ':root'
-		result = []
-		format = 'text'
-		trailinglinebreak = yes
-
-		args = process.argv.slice 2
-		while args.length isnt 0
-			arg = args.shift()
-
-			switch arg
-
-				when '-s', '--selector'
-					finder = expect_input args
-					item = item.find finder
-
-				when '-h', '--html'
-					item.each -> result.push (window.$ this).html()
-
-				when '-t', '--text'
-					item.each -> result.push (window.$ this).text()
-
-				when '-c', '--count'
-					item.each -> result.push (window.$ this).length
-
-				when '-a', '--attr'
-					finder = expect_input args
-					item.each -> result.push (window.$ this).attr finder
-
-				when '-r', '--remove'
-					item.remove()
-					item = window.$ ':root'
-
-				when '-f', '--format'
-					finder = expect_input args
-					item.each -> result.push (window.$ this).attr finder
-
-				when '-n', '--no-trailing-line-break'
-					trailinglinebreak = no
-
-				else
-					invalid_input arg
-
-		switch format
-			when 'json'
-				process.stdout.write JSON.stringify result
-			else
-				result = result.map (item) ->
-					(String item).replace /(\r\n|\n|\r)/gm, ''
-				process.stdout.write result.join '\n'
-
-		# Trailing new line
-		process.stdout.write '\n' if trailinglinebreak
+	cli2 = new Cli2 input, process.argv.slice 2
